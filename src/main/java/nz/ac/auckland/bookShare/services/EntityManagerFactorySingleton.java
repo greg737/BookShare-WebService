@@ -12,13 +12,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
-import nz.ac.auckland.bookShare.domain.DomainTest;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class EntityManagerFactorySingleton {
-	private static Logger _logger = LoggerFactory.getLogger(DomainTest.class);
+	private static Logger _logger = LoggerFactory.getLogger(EntityManagerFactorySingleton.class);
 
 	// JDBC connection to the database.
 	private static Connection _jdbcConnection = null;

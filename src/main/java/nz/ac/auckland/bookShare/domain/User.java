@@ -29,7 +29,7 @@ import javax.xml.bind.annotation.XmlAccessType;
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class User extends Person {
-	@Column(name = "USERNAME", nullable = false, unique = true)
+	@Column(name = "USERNAME", nullable = false, unique = true, length=30)
 	private String _userName;
 
 	@XmlElement(name = "city")

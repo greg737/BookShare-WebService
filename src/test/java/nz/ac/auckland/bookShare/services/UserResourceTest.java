@@ -39,7 +39,7 @@ public class UserResourceTest {
 	 */
 	@Test
 	public void addUser() {
-		User zoran = new User("lecturer101", "Zoran", "Salcic", "Auckland");
+		User zoran = new User("lecturer1", "Zoran", "Salcic", "Auckland");
 
 		Response response = _client
 				.target(WEB_SERVICE_URI).request()

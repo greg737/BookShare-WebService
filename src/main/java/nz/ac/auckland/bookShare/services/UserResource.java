@@ -74,4 +74,24 @@ public class UserResource {
 		}
 		return users;
 	}
+
+	/**
+	   * Retrieves candidateDTO parsed as XML
+	   * @param id
+	   * @return CandidateDTO
+	   */
+	  @GET
+	  @Path("{id}")
+	  @Produces("application/xml")
+	  public nz.ac.auckland.bookShare.dto.User getCandidateDtoXML(@PathParam("id") long id){
+	    // Get the full Candidate object from the database.
+		_em.getTransaction().begin();
+		User candidate = _em.find(User.class, id);
+	    _logger.debug("Retrived Candidate WITH ID: " + candidate.getId());
+	    nz.ac.auckland.bookShare.dto.User userdto = UserMapper.toDto(candidate);
+	    _em.getTransaction().commit();
+	    _em.close();
+
+	    return userdto;
+	  }
 }

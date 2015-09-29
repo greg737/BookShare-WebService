@@ -17,10 +17,10 @@ public abstract class Person {
 	@Column(name="PERSON_ID")
 	private long _id;
 
-	@Column(name="FIRSTNAME", nullable = false)
+	@Column(name="FIRSTNAME", nullable =false, length=30)
 	private String _firstName;
 	
-	@Column(name="LASTNAME", nullable = false)
+	@Column(name="LASTNAME", nullable = false, length=30)
 	private String _lastName;
 	
 	@Column(name="GENDER")
