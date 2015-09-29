@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="author" type="author"/>
+
+  <xs:element name="book" type="book"/>
+
+  <xs:element name="location" type="location"/>
+
+  <xs:element name="request" type="request"/>
+
+  <xs:element name="user" type="user"/>
+
+  <xs:complexType name="user">
+    <xs:sequence>
+      <xs:element name="id" type="xs:long"/>
+      <xs:element name="first-name" type="xs:string" minOccurs="0"/>
+      <xs:element name="last-name" type="xs:string" minOccurs="0"/>
+      <xs:element name="gender" type="gender" minOccurs="0"/>
+      <xs:element name="username" type="xs:string" minOccurs="0"/>
+      <xs:element name="city" type="xs:string" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="book">
+    <xs:sequence>
+      <xs:element name="id" type="xs:long"/>
+      <xs:element name="name" type="xs:string" minOccurs="0"/>
+      <xs:element name="genre" type="genre" minOccurs="0"/>
+      <xs:element name="author" type="xs:long"/>
+      <xs:element name="language" type="xs:string" minOccurs="0"/>
+      <xs:element name="type" type="type" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="author">
+    <xs:sequence>
+      <xs:element name="id" type="xs:long"/>
+      <xs:element name="first-name" type="xs:string" minOccurs="0"/>
+      <xs:element name="last-name" type="xs:string" minOccurs="0"/>
+      <xs:element name="gender" type="gender" minOccurs="0"/>
+      <xs:element name="written-books" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element ref="book" minOccurs="0" maxOccurs="unbounded"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="location">
+    <xs:sequence>
+      <xs:element name="latitude" type="xs:double"/>
+      <xs:element name="longitude" type="xs:double"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="request">
+    <xs:sequence>
+      <xs:element name="id" type="xs:long"/>
+      <xs:element name="requestor" type="user" minOccurs="0"/>
+      <xs:element ref="book" minOccurs="0"/>
+      <xs:element ref="location" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="gender">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="MALE"/>
+      <xs:enumeration value="FEMALE"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="genre">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="CHILDRENS"/>
+      <xs:enumeration value="FICTION"/>
+      <xs:enumeration value="SCIFI"/>
+      <xs:enumeration value="FANTASY"/>
+      <xs:enumeration value="HISTORY"/>
+      <xs:enumeration value="CRIME"/>
+      <xs:enumeration value="HORROR"/>
+      <xs:enumeration value="COMEDY"/>
+      <xs:enumeration value="CLASSIC"/>
+      <xs:enumeration value="MYSTERY"/>
+      <xs:enumeration value="SHORTS"/>
+      <xs:enumeration value="MEMOIR"/>
+      <xs:enumeration value="BIOGRAPHY"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="type">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="PAPERBACK"/>
+      <xs:enumeration value="EBOOK"/>
+      <xs:enumeration value="COMIC"/>
+    </xs:restriction>
+  </xs:simpleType>
+</xs:schema>
+
