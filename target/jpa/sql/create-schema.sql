@@ -1,6 +1,6 @@
 create table Author (PERSON_ID bigint not null, FIRSTNAME varchar(30) not null, GENDER integer, LASTNAME varchar(30) not null, primary key (PERSON_ID))
 create table Author_Book (Author_PERSON_ID bigint not null, _writtenBooks_BOOK_ID bigint not null)
-create table Book (BOOK_ID bigint not null, GENRE integer, LANGUAGE varchar(255), NAME varchar(255) not null, TYPE integer, _author_PERSON_ID bigint not null, primary key (BOOK_ID))
+create table Book (BOOK_ID bigint not null, GENRE integer, LANGUAGE integer, NAME varchar(255) not null, TYPE integer, _author_PERSON_ID bigint not null, primary key (BOOK_ID))
 create table OWNED_BOOKS (OWNER_ID bigint not null, BOOK_ID bigint not null)
 create table REQUEST_LIST (USER_ID bigint not null, REQUEST_ID bigint not null)
 create table Request (REQUEST_ID bigint not null, LATITUDE double, LONGITUDE double, _msg varchar(255), _book_BOOK_ID bigint not null, _requestor_PERSON_ID bigint not null, primary key (REQUEST_ID))

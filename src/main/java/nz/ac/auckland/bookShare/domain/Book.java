@@ -1,11 +1,10 @@
 package nz.ac.auckland.bookShare.domain;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import javax.persistence.ManyToOne;
 
 import nz.ac.auckland.bookShare.domain.Author;
@@ -32,11 +31,11 @@ public class Book {
 	@Column(name="GENRE")
 	private Genre _genre;
 	
-	@ManyToOne(optional = false)
+	@ManyToOne(optional = false, cascade=CascadeType.PERSIST)
 	private Author _author; 
 	
 	@Column(name="LANGUAGE")
-	private String _language;
+	private Language _language;
 	
 	@Column(name="TYPE")
 	private Type _type;
@@ -45,19 +44,21 @@ public class Book {
 		this(null, null, null, null, null);
 	}
 	
-	public Book(long id, String name, Genre genre, String language, Type type, Author author) {
+	public Book(long id) {
+		this(id, null, null, null, null, null);
+	}
+	
+	public Book(long id, String name, Genre genre, Language language, Type type, Author author) {
 		this(name, genre, language, type, author);
 		_id = id;
 	}
 
-	public Book(String name, Genre genre, String language, Type type, Author author) {
+	public Book(String name, Genre genre, Language language, Type type, Author author) {
 		_name = name;
 		_genre = genre;
 		_language = language;
 		_type = type;
 		_author = author;
-		if (author != null)
-			author.addNewWritten(this);
 	}
 		
 	public Genre get_genre() {
@@ -68,7 +69,7 @@ public class Book {
 		return _author;
 	}
 
-	public String getLanguage() {
+	public Language getLanguage() {
 		return _language;
 	}
 

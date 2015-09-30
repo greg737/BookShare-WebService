@@ -1,5 +1,6 @@
 package nz.ac.auckland.bookShare.domain;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;

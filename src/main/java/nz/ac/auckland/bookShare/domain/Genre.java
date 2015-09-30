@@ -3,7 +3,7 @@ package nz.ac.auckland.bookShare.domain;
 public enum Genre {
     CHILDRENS, FICTION, SCIFI, FANTASY, HISTORY,
     CRIME, HORROR, COMEDY, CLASSIC, MYSTERY, SHORTS,
-    MEMOIR, BIOGRAPHY;
+    MEMOIR, BIOGRAPHY, ACADEMIC;
     
 	public static Genre fromString(String text) {
 	    if (text != null) {

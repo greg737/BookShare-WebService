@@ -19,8 +19,8 @@ import java.util.List;
 public class Author extends Person {
 	
 	@XmlElementWrapper(name = "written-books")
-	@XmlElement(name = "book")
-	private List<Book> _writtenBooks = new ArrayList<Book>();
+	@XmlElement(name = "bookID")
+	private List<Long> _writtenBooks = new ArrayList<Long>();
 	
 	public Author(){
 		this(0, null, null);
@@ -49,12 +49,12 @@ public class Author extends Person {
 		super(id, firstName, lastName);
 	}
 
-	public Collection<Book> getWrittenBooks() {
+	public Collection<Long> getWrittenBooks() {
 		return _writtenBooks;
 	}
 
-	public void addNewWritten(Book newBook) {
-		_writtenBooks.add(newBook);
+	public void addNewWritten(long bookID) {
+		_writtenBooks.add(bookID);
 	}
 	
 	@Override

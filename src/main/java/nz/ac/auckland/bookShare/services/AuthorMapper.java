@@ -7,8 +7,8 @@ public class AuthorMapper {
 	static Author toDomainModel(nz.ac.auckland.bookShare.dto.Author dtoAuthor) {
 		Author fullAuthor = new Author(dtoAuthor.getId(), dtoAuthor.getFirstName(), dtoAuthor.getLastName());
 		if (dtoAuthor.getWrittenBooks().size() > 0){
-			for (nz.ac.auckland.bookShare.dto.Book book: dtoAuthor.getWrittenBooks()){
-				fullAuthor.addNewWritten(BookMapper.toDomainModel(book));
+			for (long bookID: dtoAuthor.getWrittenBooks()){
+				fullAuthor.addNewWritten(new Book(bookID));
 			}
 		}		
 		return fullAuthor;
@@ -19,7 +19,7 @@ public class AuthorMapper {
 				author.getId(), author.getFirstName(), author.getLastName());
 		if (author.getWrittenBooks().size() > 0){
 			for (Book book: author.getWrittenBooks()){
-				dtoAuthor.addNewWritten(BookMapper.toDto(book));
+				dtoAuthor.addNewWritten(book.getId());
 			}
 		}
 		return dtoAuthor;

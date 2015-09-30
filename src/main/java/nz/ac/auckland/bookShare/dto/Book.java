@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlType;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import nz.ac.auckland.bookShare.domain.Genre;
+import nz.ac.auckland.bookShare.domain.Language;
 import nz.ac.auckland.bookShare.domain.Type;
 
 /**
@@ -34,23 +35,23 @@ public class Book {
 	private Genre _genre;
 	
 	@XmlElement(name="author")
-	private long _author; 
+	private Author _author; 
 	
 	@XmlElement(name="language")
-	private String _language;
+	private Language _language;
 	
 	@XmlElement(name="type")
 	private Type _type;
 
 	public Book() {
-		this(null, null, null, null, 0);
+		this(null, null, null, null, null);
 	}
 	
-	public Book(String name, Genre genre, String language, Type type, long author) {
+	public Book(String name, Genre genre, Language language, Type type, Author author) {
 		this(0, name, genre, language, type, author);
 	}
 	
-	public Book(long id, String name, Genre genre, String language, Type type, long author) {
+	public Book(long id, String name, Genre genre, Language language, Type type, Author author) {
 		_id = id;
 		_name = name;
 		_genre = genre;
@@ -59,15 +60,15 @@ public class Book {
 		_author = author;
 	}
 		
-	public Genre get_genre() {
+	public Genre getGenre() {
 		return _genre;
 	}
 
-	public long getAuthor() {
+	public Author getAuthor() {
 		return _author;
 	}
 
-	public String getLanguage() {
+	public Language getLanguage() {
 		return _language;
 	}
 
