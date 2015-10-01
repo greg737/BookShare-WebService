@@ -7,6 +7,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import nz.ac.auckland.bookShare.domain.Author;
 
 /**
@@ -61,7 +64,7 @@ public class Book {
 		_author = author;
 	}
 		
-	public Genre get_genre() {
+	public Genre getGenre() {
 		return _genre;
 	}
 
@@ -83,5 +86,35 @@ public class Book {
 
 	public String getName() {
 		return _name;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Book))
+            return false;
+        if (obj == this)
+            return true;
+
+        Book rhs = (Book) obj;
+        return new EqualsBuilder().
+            append(_id, rhs._id).
+            append(_name, rhs._name).
+            append(_genre, rhs._genre).
+            append(_language, rhs._language).
+            append(_type, rhs._type).
+            append(_author, rhs._author).
+            isEquals();
+	}
+	
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 31). 
+				append(_id).
+	            append(_name).
+	            append(_genre).
+	            append(_language).
+	            append(_type).
+	            append(_author).
+	            toHashCode();
 	}
 }

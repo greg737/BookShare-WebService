@@ -1,8 +1,7 @@
 package nz.ac.auckland.bookShare.domain;
 
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,7 +12,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
-import javax.xml.bind.annotation.XmlAccessType;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
 /**
  * Bean class to represent a Parolee.
@@ -26,13 +26,12 @@ import javax.xml.bind.annotation.XmlAccessType;
  */
 
 @Entity
-@XmlRootElement
-@XmlAccessorType(XmlAccessType.FIELD)
+@Table(name = "USER", uniqueConstraints = 
+{@UniqueConstraint(columnNames = { "FIRSTNAME", "LASTNAME" }) })
 public class User extends Person {
 	@Column(name = "USERNAME", nullable = false, unique = true, length=30)
 	private String _userName;
 
-	@XmlElement(name = "city")
 	@Column(name="CITY")
 	private String _city;
 
@@ -95,5 +94,33 @@ public class User extends Person {
 
 	public void addRequest(Request request) {
 		_requests.add(request);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof User))
+            return false;
+        if (obj == this)
+            return true;
+
+        User rhs = (User) obj;
+        return new EqualsBuilder().
+            append(this.getId(), rhs.getId()).
+            append(this.getFirstName(), rhs.getFirstName()).
+            append(this.getLastName(), rhs.getLastName()).
+            append(_userName, rhs._userName).
+            append(_city, rhs._city).
+            isEquals();
+	}
+	
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 31). 
+				append(this.getId()).
+	            append(this.getFirstName()).
+	            append(this.getLastName()).
+	            append(_userName).
+	            append(_city).
+	            toHashCode();
 	}
 }

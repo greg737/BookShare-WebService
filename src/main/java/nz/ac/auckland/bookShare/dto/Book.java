@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import nz.ac.auckland.bookShare.domain.Genre;
 import nz.ac.auckland.bookShare.domain.Language;
@@ -100,5 +101,17 @@ public class Book {
             append(_type, rhs._type).
             append(_author, rhs._author).
             isEquals();
+	}
+	
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 31). 
+				append(_id).
+	            append(_name).
+	            append(_genre).
+	            append(_language).
+	            append(_type).
+	            append(_author).
+	            toHashCode();
 	}
 }

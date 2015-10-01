@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 @XmlRootElement
 @XmlType(name="request")
@@ -73,4 +74,14 @@ public class Request {
             append(_location, rhs._location).
             isEquals();
 	}
+	
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 31). 
+				append(_id).
+				append(_book).
+	            append(_requestor).
+	            append(_location).
+	            toHashCode();
+	} 	 
 }

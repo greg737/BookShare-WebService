@@ -112,17 +112,33 @@ public class UserResource {
 	@PUT
 	@Path("{id}/books")
 	@Consumes("application/xml")
-	public void addBookForUser(@PathParam("id") long id, nz.ac.auckland.bookShare.dto.Book dtoBook) {
+	public Response addBookForUser(@PathParam("id") long id, nz.ac.auckland.bookShare.dto.Book dtoBook) {
 		_em.getTransaction().begin();
-		User user = _em.find(User.class, id);
-		_logger.debug("Retrieved User with ID: " + user.getId());
 		Book book = BookMapper.toDomainModel(dtoBook);
-		_em.persist(book);
-		user.addNewOwned(book);
-		_em.persist(user);
-		_logger.debug("Added to User with ID= " + user.getId() + " a new Book");
-		_em.getTransaction().commit();
+
+		User user = _em.find(User.class, id);
+		_logger.debug("Adding book to User with ID: " + user.getId());
+		List<Author> result = _em
+				.createQuery("select a from Author a where a._firstName = :first " + "and a._lastName = :last")
+				.setParameter("first", book.getAuthor().getFirstName())
+				.setParameter("last", book.getAuthor().getLastName()).getResultList();
+		if (result.size() == 0) {
+			_em.persist(book);
+			user.addNewOwned(book);
+			_em.persist(user);
+			_logger.debug("Added new Book to User with ID = " + user.getId());
+			_em.getTransaction().commit();
+		} else {
+			Book newbook = new Book(book.getId(), book.getName(), book.getGenre(), book.getLanguage(), book.getType(),
+					result.get(0));
+			_em.persist(newbook);
+			user.addNewOwned(newbook);
+			_em.persist(user);
+			_logger.debug("Added new Book to User with ID = " + user.getId());
+			_em.getTransaction().commit();
+		}
 		_em.close();
+		return Response.created(URI.create("/users/" + id + "/books" + book.getId())).build();
 	}
 
 	@GET
@@ -131,7 +147,7 @@ public class UserResource {
 	public List<nz.ac.auckland.bookShare.dto.Book> getBooks(@PathParam("id") long id) {
 		List<nz.ac.auckland.bookShare.dto.Book> books = new ArrayList<nz.ac.auckland.bookShare.dto.Book>();
 		_logger.debug("Retrieving list of books");
-		
+
 		_em.getTransaction().begin();
 		User result = _em.find(User.class, id);
 		for (Book book : result.getOwnedBooks()) {
@@ -142,7 +158,7 @@ public class UserResource {
 
 		return books;
 	}
-	
+
 	/**
 	 * Updates an existing User. The parts of a User that can be updated are
 	 * those represented by a nz.ac.auckland.parolee.dto.Parolee instance.
@@ -153,17 +169,54 @@ public class UserResource {
 	@PUT
 	@Path("{id}/requests")
 	@Consumes("application/xml")
-	public void addRequestForUser(@PathParam("id") long id, nz.ac.auckland.bookShare.dto.Request dtoRequest) {
+	public Response addRequestForUser(@PathParam("id") long id, nz.ac.auckland.bookShare.dto.Request dtoRequest) {
 		_em.getTransaction().begin();
-		User user = _em.find(User.class, id);
-		_logger.debug("Retrieved User with ID: " + user.getId());
 		Request request = RequestMapper.toDomainModel(dtoRequest);
-		_em.persist(request);
-		user.addRequest(request);
-		_em.persist(user);
-		_logger.debug("Added to User with ID= " + user.getId() + " a new Request");
-		_em.getTransaction().commit();
+
+		User user = _em.find(User.class, id);
+		_logger.debug("Adding request to User with ID: " + user.getId());
+		List<User> resultUser = _em
+				.createQuery("select u from User u where u._firstName = :first " + "and u._lastName = :last")
+				.setParameter("first", request.getRequestor().getFirstName())
+				.setParameter("last", request.getRequestor().getLastName()).getResultList();
+		List<Book> resultBook = _em
+				.createQuery("select b from Book b where b._name = :name ")
+				.setParameter("name", request.getBook().getName())
+				.getResultList();
+		if (resultUser.size() == 0) {
+			if (resultBook.size() == 0) {
+				_em.persist(request);
+				user.addRequest(request);
+				_em.persist(user);
+				_logger.debug("Added new Request to User with ID = " + user.getId());
+				_em.getTransaction().commit();
+			} else {
+				Request newRequest = new Request(request.getId(), request.getRequestor(), resultBook.get(0));
+				_em.persist(newRequest);
+				user.addRequest(newRequest);
+				_em.persist(user);
+				_logger.debug("Added new Request to User with ID = " + user.getId());
+				_em.getTransaction().commit();
+			}
+		} else {
+			if (resultBook.size() == 0) {
+				Request newRequest = new Request(request.getId(), resultUser.get(0), request.getBook());
+				_em.persist(newRequest);
+				user.addRequest(newRequest);
+				_em.persist(user);
+				_logger.debug("Added new Request to User with ID = " + user.getId());
+				_em.getTransaction().commit();
+			} else {
+				Request newRequest = new Request(request.getId(), resultUser.get(0), resultBook.get(0));
+				_em.persist(newRequest);
+				user.addRequest(newRequest);
+				_em.persist(user);
+				_logger.debug("Added new Request to User with ID = " + user.getId());
+				_em.getTransaction().commit();
+			}
+		}
 		_em.close();
+		return Response.created(URI.create("/users/" + id + "/books" + request.getId())).build();
 	}
 
 	@GET
@@ -172,7 +225,7 @@ public class UserResource {
 	public List<nz.ac.auckland.bookShare.dto.Request> getRequests(@PathParam("id") long id) {
 		List<nz.ac.auckland.bookShare.dto.Request> requests = new ArrayList<nz.ac.auckland.bookShare.dto.Request>();
 		_logger.debug("Retrieving list of request");
-		
+
 		_em.getTransaction().begin();
 		User result = _em.find(User.class, id);
 		for (Request request : result.getRequests()) {
@@ -192,24 +245,30 @@ public class UserResource {
 	public void wipeAll() {
 		_logger.debug("WIPING DATA");
 		_em.getTransaction().begin();
+		List<Request> requests = _em.createQuery("select r from Request r").getResultList();
+		for (Request request : requests) {
+			_logger.debug("Removing Request: " + request.getId());
+			_em.remove(request);
+		}
+		
 		List<User> users = _em.createQuery("select u from User u").getResultList();
 		for (User user : users) {
-			_logger.debug("Removing Candidate: " + user.getId());
+			_logger.debug("Removing User: " + user.getId());
 			_em.remove(user);
 		}
 
 		List<Book> books = _em.createQuery("select b from Book b").getResultList();
 		for (Book book : books) {
-			_logger.debug("Removing Candidate: " + book.getId());
+			_logger.debug("Removing Book: " + book.getId());
 			_em.remove(book);
 		}
-		
+
 		List<Author> authors = _em.createQuery("select a from Author a").getResultList();
 		for (Author author : authors) {
-			_logger.debug("Removing Candidate: " + author.getId());
+			_logger.debug("Removing Author: " + author.getId());
 			_em.remove(author);
 		}
-
+		
 		_em.getTransaction().commit();
 		_em.close();
 	}

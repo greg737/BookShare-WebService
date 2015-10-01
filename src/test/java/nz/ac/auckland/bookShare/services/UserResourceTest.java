@@ -107,7 +107,7 @@ public class UserResourceTest {
 		Book book = new Book("How To Program", Genre.ACADEMIC, Language.ENGLISH, Type.PAPERBACK, author);
 		Response response1 = _client.target(location + "/books").request().put(Entity.xml(book));
 
-		if (response1.getStatus() != 204) {
+		if (response1.getStatus() != 201) {
 			fail("Failed to add new Book");
 		}
 		response1.close();
@@ -143,24 +143,24 @@ public class UserResourceTest {
 		String location2 = response2.getLocation().toString();
 		response2.close();
 		
-		Request request = new Request(user2, book);
+		Request request = new Request(user1, book);
 		Response response3 = _client.target(location2 + "/requests").request().put(Entity.xml(request));
 
-		if (response3.getStatus() != 204) {
+		if (response3.getStatus() != 201) {
 			fail("Failed to add new Request");
 		}
-//		response3.close();
-//		
-//		List<Request> requests = _client.target(location2 + "/books").request().accept("application/xml")
-//				.get(new GenericType<List<Request>>() {
-//				});
-//		Request requestFromService = requests.get(0);
-//		
-//		assertEquals(request.getBook().getName(), requestFromService.getBook().getName());
-//		assertEquals(request.getBook().getType(), requestFromService.getBook().getType());
-//		assertEquals(request.getBook().getLanguage(), requestFromService.getBook().getLanguage());
-//		assertEquals(request.getBook().getGenre(), requestFromService.getBook().getGenre());
-//		assertEquals(request.getRequestor().getFirstName(), requestFromService.getRequestor().getFirstName());
-//		assertEquals(request.getRequestor().getLastName(), requestFromService.getRequestor().getLastName());
+		response3.close();
+		
+		List<Request> requests = _client.target(location2 + "/requests").request().accept("application/xml")
+				.get(new GenericType<List<Request>>() {
+				});
+		Request requestFromService = requests.get(0);
+		
+		assertEquals(request.getBook().getName(), requestFromService.getBook().getName());
+		assertEquals(request.getBook().getType(), requestFromService.getBook().getType());
+		assertEquals(request.getBook().getLanguage(), requestFromService.getBook().getLanguage());
+		assertEquals(request.getBook().getGenre(), requestFromService.getBook().getGenre());
+		assertEquals(request.getRequestor().getFirstName(), requestFromService.getRequestor().getFirstName());
+		assertEquals(request.getRequestor().getLastName(), requestFromService.getRequestor().getLastName());
 	}
 }

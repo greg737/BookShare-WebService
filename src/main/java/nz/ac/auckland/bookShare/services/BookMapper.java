@@ -12,7 +12,7 @@ public class BookMapper {
 	
 	static nz.ac.auckland.bookShare.dto.Book toDto(Book book) {
 		nz.ac.auckland.bookShare.dto.Book dtoBook = new nz.ac.auckland.bookShare.dto.Book(
-				book.getId(), book.getName(), book.get_genre(), book.getLanguage(), book.getType(),
+				book.getId(), book.getName(), book.getGenre(), book.getLanguage(), book.getType(),
 				AuthorMapper.toDto(book.getAuthor()));
 		return dtoBook;
 		

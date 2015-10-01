@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,5 +72,15 @@ public class Author extends Person {
             append(this.getLastName(), rhs.getLastName()).
             append(this.getWrittenBooks(), rhs.getWrittenBooks()).
             isEquals();
+	}
+	
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 31). 
+				append(this.getId()).
+	            append(this.getFirstName()).
+	            append(this.getLastName()).
+	            append(this.getWrittenBooks()).
+	            toHashCode();
 	}
 }

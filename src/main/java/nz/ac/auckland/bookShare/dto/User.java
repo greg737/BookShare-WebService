@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import javax.xml.bind.annotation.XmlAccessType;
 
@@ -73,4 +74,15 @@ public class User extends Person {
             append(_city, rhs._city).
             isEquals();
 	}
+	
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 31). 
+				append(this.getId()).
+	            append(this.getFirstName()).
+	            append(this.getLastName()).
+	            append(_userName).
+	            append(_city).
+	            toHashCode();
+	} 	 
 }
