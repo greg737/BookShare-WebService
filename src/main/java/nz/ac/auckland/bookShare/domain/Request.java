@@ -1,14 +1,15 @@
 package nz.ac.auckland.bookShare.domain;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.OneToOne;
-
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
+import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 
 @Entity
 public class Request {
@@ -17,10 +18,13 @@ public class Request {
 	@Column(name="REQUEST_ID")
 	private long _id;
 	
-	@OneToOne(optional = false)
-	private User _requestor;
+	@ManyToMany
+	private Set<User> _requestor;
 	
-	@OneToOne(optional = false)
+	@ManyToOne
+	private User _bookOwner;
+	
+	@ManyToOne(optional = false)
 	private Book _book;
 	
 	@Embedded
@@ -29,25 +33,42 @@ public class Request {
 	private String _msg;
 	
 	public Request(){
-		this(null, null);
+		this(null, null, null);
 	}
 	
-	public Request(long id, User user, Book book){
-		this(user, book);
+	public Request(long id, User user, User owner, Book book){
+		this(user, owner, book);
 		_id = id;
 	}
 	
-	public Request(User user, Book book){
-		_requestor = user;
+	public Request(long id, Set<User> users, User owner, Book book){
+		_requestor = users;
 		_book = book;
+		_id = id;
+		_bookOwner = owner;
+	}
+	
+	public Request(User user, User owner, Book book){
+		_requestor = new HashSet<User>();
+		_requestor.add(user);
+		_book = book;
+		_bookOwner = owner;
 	}
 	
 	public long getId(){
 		return _id;
 	}
 	
-	public User getRequestor() {
+	public User getOwner(){
+		return _bookOwner;
+	}
+	
+	public Set<User> getRequestors() {
 		return _requestor;
+	}
+	
+	public void addRequestor(User user){
+		_requestor.add(user);
 	}
 	
 	public Book getBook() {
@@ -69,30 +90,4 @@ public class Request {
 	public Location getLocation(){
 		return _location;
 	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (!(obj instanceof Request))
-            return false;
-        if (obj == this)
-            return true;
-
-        Request rhs = (Request) obj;
-        return new EqualsBuilder().
-            append(_id, rhs._id).
-            append(_book, rhs._book).
-            append(_requestor, rhs._requestor).
-            append(_location, rhs._location).
-            isEquals();
-	}
-	
-	@Override
-	public int hashCode() {
-		return new HashCodeBuilder(17, 31). 
-				append(_id).
-				append(_book).
-	            append(_requestor).
-	            append(_location).
-	            toHashCode();
-	} 	 
 }

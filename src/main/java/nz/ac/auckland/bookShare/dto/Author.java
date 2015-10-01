@@ -7,9 +7,6 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -56,31 +53,5 @@ public class Author extends Person {
 
 	public void addNewWritten(long bookID) {
 		_writtenBooks.add(bookID);
-	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (!(obj instanceof Author))
-            return false;
-        if (obj == this)
-            return true;
-
-        Author rhs = (Author) obj;
-        return new EqualsBuilder().
-            append(this.getId(), rhs.getId()).
-            append(this.getFirstName(), rhs.getFirstName()).
-            append(this.getLastName(), rhs.getLastName()).
-            append(this.getWrittenBooks(), rhs.getWrittenBooks()).
-            isEquals();
-	}
-	
-	@Override
-	public int hashCode() {
-		return new HashCodeBuilder(17, 31). 
-				append(this.getId()).
-	            append(this.getFirstName()).
-	            append(this.getLastName()).
-	            append(this.getWrittenBooks()).
-	            toHashCode();
 	}
 }

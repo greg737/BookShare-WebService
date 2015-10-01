@@ -5,9 +5,6 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-
 import javax.xml.bind.annotation.XmlAccessType;
 
 /**
@@ -57,32 +54,4 @@ public class User extends Person {
 	public String getUserName() {
 		return _userName;
 	}
-	
-	@Override
-	public boolean equals(Object obj) {
-		if (!(obj instanceof User))
-            return false;
-        if (obj == this)
-            return true;
-
-        User rhs = (User) obj;
-        return new EqualsBuilder().
-            append(this.getId(), rhs.getId()).
-            append(this.getFirstName(), rhs.getFirstName()).
-            append(this.getLastName(), rhs.getLastName()).
-            append(_userName, rhs._userName).
-            append(_city, rhs._city).
-            isEquals();
-	}
-	
-	@Override
-	public int hashCode() {
-		return new HashCodeBuilder(17, 31). 
-				append(this.getId()).
-	            append(this.getFirstName()).
-	            append(this.getLastName()).
-	            append(_userName).
-	            append(_city).
-	            toHashCode();
-	} 	 
 }

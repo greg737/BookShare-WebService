@@ -5,11 +5,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-
-import nz.ac.auckland.bookShare.dto.Author;
-import nz.ac.auckland.bookShare.dto.Location;
-
 @MappedSuperclass
 public abstract class Person {
 	@Id

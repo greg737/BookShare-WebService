@@ -35,6 +35,8 @@ public class BookShareApplication extends Application
       singletons.add(new EntityManagerFactorySingleton());
       classes.add(UserResource.class);
       classes.add(UserResolver.class);
+      classes.add(BookResource.class);
+      classes.add(RequestResource.class);
    }
 
    @Override
