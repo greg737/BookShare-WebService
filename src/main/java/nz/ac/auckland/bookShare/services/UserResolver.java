@@ -4,7 +4,7 @@ import javax.ws.rs.ext.ContextResolver;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
-import nz.ac.auckland.bookShare.domain.User;
+import nz.ac.auckland.bookShare.dto.User;
 
 /**
  * ContextResolver implementation to return a customised JAXBContext

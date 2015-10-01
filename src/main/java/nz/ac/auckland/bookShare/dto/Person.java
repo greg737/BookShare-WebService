@@ -5,6 +5,12 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import nz.ac.auckland.bookShare.domain.Gender;
 
+/**
+ * DTO class to represent a Person.
+ * 
+ * @author Greggory Tan
+ *
+ */
 @XmlTransient
 public abstract class Person {
 	@XmlElement(name="id")
@@ -23,14 +29,18 @@ public abstract class Person {
 		this(0, null, null);
 	}
 	
+	/**
+	 * Constructs a DTO Person instance. This method is intended to be called
+	 * by Web service clients when creating new Person. 
+	 */
 	public Person(String firstName, String lastName) {
 		this(0, firstName, lastName);
 	}
 	
 	/**
-	 * Constructs a DTO Parolee instance. This method should NOT be called by 
+	 * Constructs a DTO Person instance. This method should NOT be called by 
 	 * Web Service clients. It is intended to be used by the Web Service 
-	 * implementation when creating a DTO Parolee from a domain-model Parolee 
+	 * implementation when creating a DTO Person from a domain-model Person 
 	 * object.
 	 */
 	public Person(long id, String firstName, String lastName){

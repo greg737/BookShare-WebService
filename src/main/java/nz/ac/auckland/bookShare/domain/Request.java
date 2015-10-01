@@ -11,6 +11,19 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 
+/**
+ * Bean class to represent a Request.
+ * 
+ * 
+ * A request contains the book that is being requested,
+ * user requesting the book and the user that owns the book.
+ * A request may have a location to meet up for the swap
+ * and a message associated to it.
+ * A request also may have multiple users requesting the same book for the same owner.
+ * 
+ * @author Greggory Tan
+ *
+ */
 @Entity
 public class Request {
 	@Id
@@ -32,6 +45,7 @@ public class Request {
 	
 	private String _msg;
 	
+	//Default constructor method for JAXB
 	public Request(){
 		this(null, null, null);
 	}

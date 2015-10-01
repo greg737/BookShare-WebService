@@ -9,6 +9,12 @@ import javax.xml.bind.annotation.XmlType;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+/**
+ * DTO class to represent a Author.
+ * 
+ * @author Greggory Tan
+ *
+ */
 @XmlRootElement
 @XmlType(name="location")
 @XmlAccessorType(XmlAccessType.FIELD)

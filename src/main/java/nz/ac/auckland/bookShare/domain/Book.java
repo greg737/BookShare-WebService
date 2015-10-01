@@ -10,12 +10,12 @@ import javax.persistence.ManyToOne;
 import nz.ac.auckland.bookShare.domain.Author;
 
 /**
- * Bean class to represent a Parolee.
+ * Bean class to represent a Book.
  * 
- * For this first Web service, a Parolee is simply represented by a unique id, a
- * name, gender and date of birth.
+ * A book must have unique name, a genre, a language, a book type and
+ * a author 
  * 
- * @author Ian Warren
+ * @author Greggory Tan
  *
  */
 @Entity
@@ -40,6 +40,7 @@ public class Book {
 	@Column(name="TYPE")
 	private Type _type;
 	
+	//Default constructor method for JAXB
 	public Book() {
 		this(null, null, null, null, null);
 	}

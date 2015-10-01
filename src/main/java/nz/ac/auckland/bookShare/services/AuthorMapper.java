@@ -3,6 +3,13 @@ package nz.ac.auckland.bookShare.services;
 import nz.ac.auckland.bookShare.domain.Author;
 import nz.ac.auckland.bookShare.domain.Book;
 
+/**
+ * Helper class to convert between domain-model and DTO objects representing
+ * Author.
+ * 
+ * @author Greggory Tan
+ *
+ */
 public class AuthorMapper {
 	static Author toDomainModel(nz.ac.auckland.bookShare.dto.Author dtoAuthor) {
 		Author fullAuthor = new Author(dtoAuthor.getId(), dtoAuthor.getFirstName(), dtoAuthor.getLastName());

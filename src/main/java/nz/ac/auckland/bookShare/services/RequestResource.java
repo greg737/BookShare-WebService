@@ -20,6 +20,12 @@ public class RequestResource {
 		_em = EntityManagerFactorySingleton.generateEntityManager();
 	}
 	
+	/**
+	 * Returns nz.ac.auckland.bookShare.dto.Request with matching id parsed as XML
+	 * 
+	 * @param id
+	 * @return nz.ac.auckland.bookShare.dto.Request
+	 */
 	@GET
 	@Path("{id}")
 	@Produces("application/xml")

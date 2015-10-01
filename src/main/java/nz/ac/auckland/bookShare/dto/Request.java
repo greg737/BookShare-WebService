@@ -10,6 +10,12 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+/**
+ * DTO class to represent a Request.
+ * 
+ * @author Greggory Tan
+ *
+ */
 @XmlRootElement
 @XmlType(name="request")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -34,14 +40,29 @@ public class Request {
 		this(null, null, null);
 	}
 	
+	/**
+	 * Constructs a DTO Request instance. This method is intended to be called
+	 * by Web service clients when creating new Request and has a owner field to be added. 
+	 */
 	public Request(User user, User owner, Book book){
 		this(0, user, owner, book);
 	}
 	
+	/**
+	 * Constructs a DTO Request instance. This method is intended to be called
+	 * by Web service clients when creating new Request sent by a user. The Web Service
+	 * will fetch the owner of the book and add it to the request.
+	 */
 	public Request(User user, Book book){
 		this(0, user, null, book);
 	}
 	
+	/**
+	 * Constructs a DTO Request instance. This method should NOT be called by 
+	 * Web Service clients. It is intended to be used by the Web Service 
+	 * implementation when creating a DTO Request from a domain-model Request 
+	 * object.
+	 */
 	public Request(long id, Set<User> users, User owner, Book book){
 		_requestor = users;
 		_book = book;
@@ -49,6 +70,12 @@ public class Request {
 		_bookOwner = owner;
 	}
 	
+	/**
+	 * Constructs a DTO Parolee instance. This method should NOT be called by 
+	 * Web Service clients. It is intended to be used by the Web Service 
+	 * implementation when creating a DTO Parolee from a domain-model Parolee 
+	 * object.
+	 */
 	public Request(long id, User user, User owner, Book book){
 		_id = id;
 		_requestor = new HashSet<User>();

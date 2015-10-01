@@ -11,12 +11,9 @@ import nz.ac.auckland.bookShare.domain.Language;
 import nz.ac.auckland.bookShare.domain.Type;
 
 /**
- * Bean class to represent a Parolee.
+ * DTO class to represent a Book.
  * 
- * For this first Web service, a Parolee is simply represented by a unique id, a
- * name, gender and date of birth.
- * 
- * @author Ian Warren
+ * @author Greggory Tan
  *
  */
 @XmlRootElement
@@ -45,10 +42,20 @@ public class Book {
 		this(null, null, null, null, null);
 	}
 	
+	/**
+	 * Constructs a DTO Book instance. This method is intended to be called
+	 * by Web service clients when creating new Book. 
+	 */
 	public Book(String name, Genre genre, Language language, Type type, Author author) {
 		this(0, name, genre, language, type, author);
 	}
 	
+	/**
+	 * Constructs a DTO Book instance. This method should NOT be called by 
+	 * Web Service clients. It is intended to be used by the Web Service 
+	 * implementation when creating a DTO Book from a domain-model Book 
+	 * object.
+	 */
 	public Book(long id, String name, Genre genre, Language language, Type type, Author author) {
 		_id = id;
 		_name = name;

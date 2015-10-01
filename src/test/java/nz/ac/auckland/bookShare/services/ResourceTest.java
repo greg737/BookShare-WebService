@@ -7,6 +7,7 @@ import java.util.List;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 
@@ -23,6 +24,12 @@ import nz.ac.auckland.bookShare.dto.Book;
 import nz.ac.auckland.bookShare.dto.Request;
 import nz.ac.auckland.bookShare.dto.User;
 
+/**
+ * Tests all the resourse implementaion for this webservice
+ * 
+ * @author Greggory Tan
+ *
+ */
 public class ResourceTest {
 	private static final String WEB_SERVICE_URI = "http://localhost:8080/services/users";
 
@@ -49,6 +56,10 @@ public class ResourceTest {
 		}
 	}
 
+	/**
+	 * One-time setup method that deletes the the rows in the database if the 
+	 * condition cleardata is true.
+	 */
 	@BeforeClass
 	public static void deleteAllData() {
 		if (clearData) {
@@ -75,14 +86,9 @@ public class ResourceTest {
 		String location = zoranResponse.getLocation().toString();
 		zoranResponse.close();
 
-		// Query the Web service for the new Parolee.
+		// Query the Web service for the new user.
 		User zoranFromService = _client.target(location).request().accept("application/xml").get(User.class);
 
-		// The original local Parolee object (zoran) should have a value equal
-		// to that of the Parolee object representing Zoran that is later
-		// queried from the Web service. The only exception is the value
-		// returned by getId(), because the Web service assigns this when it
-		// creates a Parolee.
 		assertEquals(zoran.getUserName(), zoranFromService.getUserName());
 		assertEquals(zoran.getLastName(), zoranFromService.getLastName());
 		assertEquals(zoran.getFirstName(), zoranFromService.getFirstName());
@@ -91,7 +97,7 @@ public class ResourceTest {
 	}
 
 	/**
-	 * Tests that the Web service can return all users.
+	 * Tests that the Web service can add a new book to a user's library
 	 */
 	@Test
 	public void updateUserBookLibrary() {
@@ -122,7 +128,7 @@ public class ResourceTest {
 	}
 
 	/**
-	 * Tests that the Web service can return all users.
+	 * Tests that the Web service can add a new request to a user
 	 */
 	@Test
 	public void updateUserRequest() {
@@ -158,7 +164,7 @@ public class ResourceTest {
 	}
 
 	/**
-	 * Tests that the Web service can return all users.
+	 * Tests that the Web service can return a number of request.
 	 */
 	@Test
 	public void userRequestQueryParam() {
@@ -202,12 +208,12 @@ public class ResourceTest {
 
 		assertEquals(2, result.size());
 	}
-	
+
 	/**
-	 * Tests that the Web service can return all users.
+	 * Tests that the Web service can return a number of books owned by the user.
 	 */
 	@Test
-	public void userBookQueryParam() {
+	public void userResourceBookQueryParam() {
 		User user1 = new User("user23", "Cat", "Watsons", "Auckland");
 		Response userResponse0 = _client.target(WEB_SERVICE_URI).request().post(Entity.xml(user1));
 		String location1 = userResponse0.getLocation().toString();
@@ -231,5 +237,136 @@ public class ResourceTest {
 				});
 
 		assertEquals(2, result.size());
+	}
+
+	/**
+	 * Tests that the Web service can return a number of books in the database.
+	 */
+	@Test
+	public void bookResourceQueryParam() {
+		User user1 = new User("unknownUser", "Un", "Knowned", "Auckland");
+		Response userResponse0 = _client.target(WEB_SERVICE_URI).request().post(Entity.xml(user1));
+		String location1 = userResponse0.getLocation().toString();
+		userResponse0.close();
+
+		Author author = new Author("Gabe", "Newell");
+		Book book = new Book("PC NOT MASTER RACE", Genre.COMEDY, Language.ENGLISH, Type.PAPERBACK, author);
+		Response authorResponse1 = _client.target(location1 + "/books").request().put(Entity.xml(book));
+		authorResponse1.close();
+
+		Book book1 = new Book("How To Not Make Easy Money", Genre.ACADEMIC, Language.ENGLISH, Type.PAPERBACK, author);
+		Response bookResponse2 = _client.target(location1 + "/books").request().put(Entity.xml(book1));
+		bookResponse2.close();
+
+		Book book2 = new Book("Console is MasterRace", Genre.COMEDY, Language.ENGLISH, Type.PAPERBACK, author);
+		Response bookResponse3 = _client.target(location1 + "/books").request().put(Entity.xml(book2));
+		bookResponse3.close();
+
+		Book book3 = new Book("Console is Not MasterRace", Genre.COMEDY, Language.ENGLISH, Type.PAPERBACK, author);
+		Response bookResponse4 = _client.target(location1 + "/books").request().put(Entity.xml(book3));
+		bookResponse4.close();
+
+		List<Book> result = _client.target(location1 + "/books?size=2").request().accept("application/xml")
+				.get(new GenericType<List<Book>>() {
+				});
+
+		assertEquals(2, result.size());
+	}
+
+	/**
+	 * Tests that a book can be owned by different users.
+	 */
+	@Test
+	public void bookOwnedByMultipleUsers() {
+		User user1 = new User("users145", "Caths", "Watting", "Auckland");
+		Response userResponse0 = _client.target(WEB_SERVICE_URI).request().post(Entity.xml(user1));
+		String location1 = userResponse0.getLocation().toString();
+		userResponse0.close();
+
+		User user2 = new User("users134", "Random", "User", "Auckland");
+		Response userResponse1 = _client.target(WEB_SERVICE_URI).request().post(Entity.xml(user2));
+		String location2 = userResponse1.getLocation().toString();
+		userResponse1.close();
+
+		Author author = new Author("Mark", "Wilson");
+		Book book = new Book("Insert Name", Genre.ACADEMIC, Language.ENGLISH, Type.PAPERBACK, author);
+		Response authorResponse1 = _client.target(location1 + "/books").request().put(Entity.xml(book));
+		authorResponse1.close();
+
+		Book book1 = new Book("Do not read", Genre.ACADEMIC, Language.ENGLISH, Type.PAPERBACK, author);
+		Response bookResponse2 = _client.target(location1 + "/books").request().put(Entity.xml(book1));
+		bookResponse2.close();
+
+		Book book2 = new Book("Testing 123", Genre.ACADEMIC, Language.ENGLISH, Type.PAPERBACK, author);
+		Response bookResponse3 = _client.target(location1 + "/books").request().put(Entity.xml(book2));
+		String location3 = bookResponse3.getLocation().toString();
+		String idStr = location3.substring(location3.lastIndexOf('/') + 1);
+		bookResponse3.close();
+
+		Response bookResponse4 = _client.target(location2 + "/books").request().put(Entity.xml(book2));
+		String location4 = bookResponse4.getLocation().toString();
+		String idStr1 = location4.substring(location4.lastIndexOf('/') + 1);
+		bookResponse4.close();
+
+		List<User> users = _client.target("http://localhost:8080/services/books/" + idStr + "/owners").request()
+				.accept("application/xml").get(new GenericType<List<User>>() {
+				});
+		assertEquals(2, users.size());
+	}
+	
+	/**
+	 * Tests that the Web service can return a number of request.
+	 */
+	@Test
+	public void userQueryParam() {
+		User user0 = new User("hacker1", "Best", "Hacker", "Auckland");
+		Response response0 = _client.target(WEB_SERVICE_URI).request().post(Entity.xml(user0));
+		response0.close();
+		User user1 = new User("hacker2", "What", "Hacker", "Auckland");
+		Response response1 = _client.target(WEB_SERVICE_URI).request().post(Entity.xml(user1));
+		response1.close();
+		User user2 = new User("hacker3", "Worst", "Hacker", "Auckland");
+		Response response2 = _client.target(WEB_SERVICE_URI).request().post(Entity.xml(user2));
+		response2.close();
+		
+		List<User> users = _client.target(WEB_SERVICE_URI + "?size=2").request()
+				.accept("application/xml").get(new GenericType<List<User>>() {
+				});
+		assertEquals(2, users.size());
+
+	}
+
+	/**
+	 * Testing if the web service can create a cookie that holds the id of the user
+	 * and then retrieve that cookie This can be used to find other users in the same city
+	 */
+	@Test
+	public void testUserLogin() {
+		User user0 = new User("lecturer234", "Best", "Lecturer", "Wellington");
+		Response response0 = _client.target(WEB_SERVICE_URI).request().post(Entity.xml(user0));
+		String location = response0.getLocation().toString();
+		response0.close();
+		User user1 = new User("lecturer002", "Not", "Lecturer", "Wellington");
+		Response response1 = _client.target(WEB_SERVICE_URI).request().post(Entity.xml(user1));
+		response1.close();
+		User user2 = new User("lecturer012", "Maybe", "Lecturer", "Wellington");
+		Response response2 = _client.target(WEB_SERVICE_URI).request().post(Entity.xml(user2));
+		response2.close();
+		
+		
+
+		// Create a cookie for the user
+		Response response3  = _client.target(location + "/login").request().get();
+		Cookie cookie = response3.getCookies().get("user").toCookie();
+		response3.close();
+
+		// Now retrieve users in same city with cookie
+		List<User> users = _client.target(WEB_SERVICE_URI ).request().cookie(cookie)
+				.get(new GenericType<List<User>>() {
+				});
+		assertEquals(3, users.size());
+		assertEquals(user0.getCity(), users.get(0).getCity());
+		assertEquals(user0.getCity(), users.get(1).getCity());
+		assertEquals(user0.getCity(), users.get(2).getCity());
 	}
 }

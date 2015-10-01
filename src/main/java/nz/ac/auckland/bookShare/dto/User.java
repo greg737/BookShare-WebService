@@ -8,15 +8,11 @@ import javax.xml.bind.annotation.XmlType;
 import javax.xml.bind.annotation.XmlAccessType;
 
 /**
- * Bean class to represent a Parolee.
+ * DTO class to represent a User.
  * 
- * For this first Web service, a Parolee is simply represented by a unique id, a
- * name, gender and date of birth.
- * 
- * @author Ian Warren
+ * @author Greggory Tan
  *
  */
-
 @XmlRootElement
 @XmlType(name="user")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -31,12 +27,22 @@ public class User extends Person {
 		this(null, null, null, null);
 	}
 	
+	/**
+	 * Constructs a DTO User instance. This method is intended to be called
+	 * by Web service clients when creating new User. 
+	 */
 	public User(String userName, String firstName, String lastName, String city) {
 		super(firstName, lastName);
 		_userName = userName;
 		_city = city;
 	}
 	
+	/**
+	 * Constructs a DTO User instance. This method should NOT be called by 
+	 * Web Service clients. It is intended to be used by the Web Service 
+	 * implementation when creating a DTO User from a domain-model User 
+	 * object.
+	 */
 	public User(Long id, String userName, String firstName, String lastName, String city) {
 		super(id, firstName, lastName);
 		_userName = userName;

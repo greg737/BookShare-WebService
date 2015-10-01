@@ -5,6 +5,16 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 
+/**
+ * Bean class to represent a Person.
+ * 
+ * 
+ * A Person is the parent of the Author class and User class.
+ * This class implements the id, first and last name fields.
+ * 
+ * @author Greggory Tan
+ *
+ */
 @MappedSuperclass
 public abstract class Person {
 	@Id
@@ -21,6 +31,7 @@ public abstract class Person {
 	@Column(name="GENDER")
 	private Gender _gender;
 
+	//Default constructor method for JAXB
 	public Person(){
 		this(null, null);
 	}

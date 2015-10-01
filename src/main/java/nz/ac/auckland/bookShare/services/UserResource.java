@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.CookieParam;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -18,6 +19,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Cookie;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 
 import org.slf4j.Logger;
@@ -30,9 +34,9 @@ import nz.ac.auckland.bookShare.domain.User;
 
 /**
  * Service interface for the Users application. This interface allows Users to
- * be created, queried (by id) and updated.
+ * be created, queried (by id). Users can also add and query books and request.
  * 
- * @author Ian Warren
+ * @author Greggory Tan
  *
  */
 @Path("/users")
@@ -46,10 +50,10 @@ public class UserResource {
 
 	/**
 	 * Adds a new User to the system. The state of the new User is described by
-	 * a nz.ac.auckland.User.dto.User object.
+	 * a nz.ac.auckland.bookShare.dto.User object.
 	 * 
 	 * @param dtoUser
-	 *            the User data included in the HTTP request body.
+	 * @return Response
 	 */
 	@POST
 	@Consumes("application/xml")
@@ -67,36 +71,69 @@ public class UserResource {
 
 	/**
 	 * Returns a view of the User database, represented as a List of
-	 * nz.ac.auckland.parolee.dto.Parolee objects.
+	 * nz.ac.auckland.bookShare.dto.User objects.
+	 * If a cookie is received from the user a List of Users in the 
+	 * same city is returned instead.
+	 * A QueryParam of size can be included to limit the number of users returned
 	 * 
+	 * @param size
+	 * @param cookie
+	 * @return List<nz.ac.auckland.bookShare.dto.User> 
 	 */
 	@GET
 	@Produces("application/xml")
-	public List<nz.ac.auckland.bookShare.dto.User> getParolees(
-			@DefaultValue(value = "-1") @QueryParam("size") int size) {
+	public List<nz.ac.auckland.bookShare.dto.User> getParolees(@DefaultValue(value = "-1") @QueryParam("size") int size,
+			@CookieParam("user") Cookie cookie) {
 		_logger.debug("Creating list of users");
 		List<nz.ac.auckland.bookShare.dto.User> users = new ArrayList<nz.ac.auckland.bookShare.dto.User>();
-		_em.getTransaction().begin();
-		List<User> results = _em.createQuery("select u from User u").getResultList();
-		if (size == -1) {
-			for (User user : results) {
-				users.add(UserMapper.toDto(user));
+		if (cookie == null) {
+			_logger.debug("Did not have cookie");
+			_em.getTransaction().begin();
+			List<User> results = _em.createQuery("select u from User u").getResultList();
+			if (size == -1) {
+				for (User user : results) {
+					users.add(UserMapper.toDto(user));
+				}
+			} else {
+				for (int i = 0; i < size; i++) {
+					users.add(UserMapper.toDto(results.get(i)));
+				}
 			}
 		} else {
-			for (int i = 0; i < size; i++) {
-				users.add(UserMapper.toDto(results.get(i)));
+			_logger.debug("Did have cookie");
+			_logger.debug("Retrieving users in same city as user with cookie: " + cookie.toString());
+			_em.getTransaction().begin();
+			User cookieHolder = _em.find(User.class, Long.parseLong(cookie.getValue()));
+			List<User> results = _em.createQuery("select u from User u where u._city = :city")
+					.setParameter("city", cookieHolder.getCity()).getResultList();
+			_logger.debug("Results size = " + results.size());
+			if (size == -1) {
+				for (User user : results) {
+					if (cookieHolder.getCity() == user.getCity()) {
+						_logger.debug("Found user in same city, " + user.getCity());
+						users.add(UserMapper.toDto(user));
+					}
+				}
+			} else {
+				for (int i = 0; i < size; i++) {
+					if (cookieHolder.getCity() == results.get(i).getCity()) {
+						_logger.debug("Found user in same city, " + results.get(i).getCity());
+						users.add(UserMapper.toDto(results.get(i)));
+					}
+				}
 			}
 		}
-		_logger.debug("Returning list of users");
+
+		_logger.debug("Returning list of users size: " + users.size());
 		_em.close();
 		return users;
 	}
 
 	/**
-	 * Retrieves candidateDTO parsed as XML
+	 * Returns nz.ac.auckland.bookShare.dto.User with matching id parsed as XML
 	 * 
 	 * @param id
-	 * @return CandidateDTO
+	 * @return nz.ac.auckland.bookShare.dto.User
 	 */
 	@GET
 	@Path("{id}")
@@ -113,11 +150,11 @@ public class UserResource {
 	}
 
 	/**
-	 * Updates an existing User. The parts of a User that can be updated are
-	 * those represented by a nz.ac.auckland.parolee.dto.Parolee instance.
+	 * Adds a Book to the user's library. 
 	 * 
-	 * @param dtoParolee
-	 * 
+	 * @param id
+	 * @param dtoBook
+	 * @return Response
 	 */
 	@PUT
 	@Path("{id}/books")
@@ -129,31 +166,45 @@ public class UserResource {
 
 		User user = _em.find(User.class, id);
 		_logger.debug("Adding book to User with ID: " + user.getId());
-		List<Author> result = _em
-				.createQuery("select a from Author a where a._firstName = :first " + "and a._lastName = :last")
-				.setParameter("first", book.getAuthor().getFirstName())
-				.setParameter("last", book.getAuthor().getLastName()).getResultList();
-		if (result.size() == 0) {
-			_em.persist(book);
-			user.addNewOwned(book);
-			_em.persist(user);
-			_logger.debug("Added new Book to User with ID = " + user.getId());
-			_em.getTransaction().commit();
-			bookID = book.getId();
+		Author newAuthor;
+		Book newBook;
+
+		List<Book> resultBook = _em.createQuery("select b from Book b where b._name = :name ")
+				.setParameter("name", book.getName()).getResultList();
+		if (resultBook.size() == 0) {
+			List<Author> resultAuthor = _em
+					.createQuery("select a from Author a where a._firstName = :first " + "and a._lastName = :last")
+					.setParameter("first", book.getAuthor().getFirstName())
+					.setParameter("last", book.getAuthor().getLastName()).getResultList();
+			if (resultAuthor.size() == 0) {
+				newAuthor = book.getAuthor();
+			} else {
+				newAuthor = resultAuthor.get(0);
+			}
+			newBook = new Book(book.getId(), book.getName(), book.getGenre(), book.getLanguage(), book.getType(),
+					newAuthor);
 		} else {
-			Book newbook = new Book(book.getId(), book.getName(), book.getGenre(), book.getLanguage(), book.getType(),
-					result.get(0));
-			_em.persist(newbook);
-			user.addNewOwned(newbook);
-			_em.persist(user);
-			_logger.debug("Added new Book to User with ID = " + user.getId());
-			_em.getTransaction().commit();
-			bookID = newbook.getId();
+			newBook = resultBook.get(0);
 		}
+
+		_em.persist(newBook);
+		user.addNewOwned(newBook);
+		_em.persist(user);
+		_logger.debug("Added new Book to User with ID = " + user.getId());
+		_em.getTransaction().commit();
+		bookID = newBook.getId();
 		_em.close();
 		return Response.created(URI.create("/users/" + id + "/books/" + bookID)).build();
 	}
 
+	/**
+	 * Returns a view of the Book owned by the user, represented as a List of
+	 * nz.ac.auckland.bookShare.dto.Book objects.
+	 * A QueryParam of size can be included to limit the number of books returned
+	 * 
+	 * @param size
+	 * @return List<nz.ac.auckland.bookShare.dto.Book> 
+	 */
 	@GET
 	@Path("{id}/books")
 	@Produces("application/xml")
@@ -176,7 +227,7 @@ public class UserResource {
 				}
 			}
 		}
-		
+
 		_logger.debug("Returning list of books");
 		_em.close();
 
@@ -184,11 +235,11 @@ public class UserResource {
 	}
 
 	/**
-	 * Updates an existing User. The parts of a User that can be updated are
-	 * those represented by a nz.ac.auckland.parolee.dto.Parolee instance.
+	 * Adds a new Request to the owner of the book. 
 	 * 
-	 * @param dtoParolee
-	 * 
+	 * @param id
+	 * @param dtoBook
+	 * @return Response
 	 */
 	@PUT
 	@Path("{id}/requests")
@@ -233,6 +284,14 @@ public class UserResource {
 		return Response.created(URI.create("/users/" + id + "/request/" + requestID)).build();
 	}
 
+	/**
+	 * Returns a view of the Request sent to the user, represented as a List of
+	 * nz.ac.auckland.bookShare.dto.Request objects.
+	 * A QueryParam of size can be included to limit the number of requests returned
+	 * 
+	 * @param size
+	 * @return List<nz.ac.auckland.bookShare.dto.Request> 
+	 */
 	@GET
 	@Path("{id}/requests")
 	@Produces("application/xml")
@@ -245,7 +304,6 @@ public class UserResource {
 		User owner = _em.find(User.class, id);
 		List<Request> resultOwner = _em.createQuery("select r from Request r where r._bookOwner = :owner ")
 				.setParameter("owner", owner).getResultList();
-		_logger.debug("@@@@" + resultOwner.size());
 		if (size == -1) {
 			for (Request request : resultOwner) {
 				requests.add(RequestMapper.toDto(request));
@@ -262,6 +320,23 @@ public class UserResource {
 		_em.close();
 
 		return requests;
+	}
+
+	/**
+	 * Method for creating a cookie where a user logs in.
+	 * 
+	 * @param id
+	 * @return Response
+	 */
+
+	@GET
+	@Path("{id}/login")
+	@Produces(MediaType.TEXT_PLAIN)
+	public Response userLogin(@PathParam("id") long id) {
+		// Set max age of cookie to 0 for testing purposes
+		NewCookie cookie = new NewCookie("user", Long.toString(id));
+		_logger.debug("Created a cookie for user: " + id + " with details: " + cookie.toString());
+		return Response.ok("OK").cookie(cookie).build();
 	}
 
 	/**

@@ -6,6 +6,15 @@ import javax.persistence.Embeddable;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+/**
+ * Bean class to represent a Location.
+ * 
+ * A location is a value type and has a 
+ * latitude and longitude.
+ * 
+ * @author Greggory Tan
+ *
+ */
 @Embeddable
 public class Location {
 	
@@ -15,6 +24,7 @@ public class Location {
 	@Column(name="LONGITUDE")
 	private double _longitude;
 	
+	//Default constructor method for JAXB
 	protected Location() {
 		this(0, 0);
 	}

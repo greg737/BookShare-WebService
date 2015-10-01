@@ -10,6 +10,16 @@ import static javax.persistence.FetchType.EAGER;
 import java.util.ArrayList;
 import java.util.Collection;
 
+/**
+ * Bean class to represent a Author.
+ * 
+ * 
+ * A author extends the Person class and must have
+ * a first and last name.
+ * 
+ * @author Greggory Tan
+ *
+ */
 @Entity
 @Table(name = "AUTHOR", uniqueConstraints = 
 {@UniqueConstraint(columnNames = { "FIRSTNAME", "LASTNAME" }) })
@@ -17,6 +27,7 @@ public class Author extends Person {
 	@OneToMany(fetch = EAGER)
 	private Collection<Book> _writtenBooks;
 
+	//Default constructor method for JAXB
 	public Author() {
 		this(null, null);
 	}

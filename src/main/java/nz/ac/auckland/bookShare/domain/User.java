@@ -13,15 +13,15 @@ import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
 /**
- * Bean class to represent a Parolee.
+ * Bean class to represent a User.
  * 
- * For this first Web service, a Parolee is simply represented by a unique id, a
- * name, gender and date of birth.
  * 
- * @author Ian Warren
+ * A user extends the Person class and must have a unique username,
+ * a first and last name and city the user is near to.
+ * 
+ * @author Greggory Tan
  *
  */
-
 @Entity
 @Table(name = "USER", uniqueConstraints = { @UniqueConstraint(columnNames = { "FIRSTNAME", "LASTNAME" }) })
 public class User extends Person {

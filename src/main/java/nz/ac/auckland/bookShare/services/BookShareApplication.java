@@ -7,21 +7,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Application class for the User Web service. This class is required by the 
+ * Application class for the BookShare Web service. This class is required by the 
  * JAX-RS implementation to deploy the Web service.
  *  
  * The relative path of the Web service beings with "services". If the Web 
  * server's address is "http://localhost:8080", the URI for hosted Web services
  * thus begins "http://localhost:8080/services". 
  * 
- * The UserResource specifies a URI path of "Users", so this is appended, 
- * making the Users Web service URI "http://localhost:8080/services/Users".
- * 
- * The UserApplication has only one Resource class (UserResourceImpl) and 
- * this is to be deployed as a singleton, encapsulating a list of User 
- * objects maintained by the Web service.
- *  
- * @author Ian Warren
+ * @author Greggory Tan
  *
  */
 @ApplicationPath("/services")

@@ -2,6 +2,13 @@ package nz.ac.auckland.bookShare.services;
 
 import nz.ac.auckland.bookShare.domain.Book;
 
+/**
+ * Helper class to convert between domain-model and DTO objects representing
+ * Book.
+ * 
+ * @author Greggory Tan
+ *
+ */
 public class BookMapper {
 	static Book toDomainModel(nz.ac.auckland.bookShare.dto.Book dtoBook) {
 		Book fullBook = new Book(dtoBook.getId(), dtoBook.getName(), dtoBook.getGenre(), 

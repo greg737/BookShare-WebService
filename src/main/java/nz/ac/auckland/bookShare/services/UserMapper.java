@@ -4,9 +4,9 @@ import nz.ac.auckland.bookShare.domain.User;
 
 /**
  * Helper class to convert between domain-model and DTO objects representing
- * Parolees.
+ * User.
  * 
- * @author Ian Warren
+ * @author Greggory Tan
  *
  */
 public class UserMapper {
