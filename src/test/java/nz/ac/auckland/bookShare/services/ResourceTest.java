@@ -3,6 +3,8 @@ package nz.ac.auckland.bookShare.services;
 import static org.junit.Assert.*;
 
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -57,7 +59,7 @@ public class ResourceTest {
 	}
 
 	/**
-	 * One-time setup method that deletes the the rows in the database if the 
+	 * One-time setup method that deletes the the rows in the database if the
 	 * condition cleardata is true.
 	 */
 	@BeforeClass
@@ -146,6 +148,8 @@ public class ResourceTest {
 		requestResponse2.close();
 
 		Request request = new Request(user2, book);
+		request.setLocation(new nz.ac.auckland.bookShare.domain.Location(10.5, 43.1));
+		request.setMessage("Want to swap for one of my books?");
 		Response requestResponse3 = _client.target(location1 + "/requests").request().put(Entity.xml(request));
 
 		if (requestResponse3.getStatus() != 201) {
@@ -154,7 +158,7 @@ public class ResourceTest {
 		String location3 = requestResponse3.getLocation().toString();
 		String idStr = location3.substring(location3.lastIndexOf('/') + 1);
 		requestResponse3.close();
-		Request requestFromService = _client.target("http://localhost:8080/services/request/" + idStr).request()
+		Request requestFromService = _client.target("http://localhost:8080/services/requests/" + idStr).request()
 				.accept("application/xml").get(Request.class);
 
 		assertEquals(request.getBook().getName(), requestFromService.getBook().getName());
@@ -210,7 +214,8 @@ public class ResourceTest {
 	}
 
 	/**
-	 * Tests that the Web service can return a number of books owned by the user.
+	 * Tests that the Web service can return a number of books owned by the
+	 * user.
 	 */
 	@Test
 	public void userResourceBookQueryParam() {
@@ -266,11 +271,80 @@ public class ResourceTest {
 		Response bookResponse4 = _client.target(location1 + "/books").request().put(Entity.xml(book3));
 		bookResponse4.close();
 
-		List<Book> result = _client.target(location1 + "/books?size=2").request().accept("application/xml")
-				.get(new GenericType<List<Book>>() {
+		List<Book> result = _client.target("http://localhost:8080/services/books?size=2").request()
+				.accept("application/xml").get(new GenericType<List<Book>>() {
 				});
 
 		assertEquals(2, result.size());
+	}
+
+	/**
+	 * Tests that the Web service can return a number of authors.
+	 */
+	@Test
+	public void authorResourceQueryParam() {
+		User user1 = new User("hello", "Catches", "Poekmon", "Auckland");
+		Response userResponse0 = _client.target(WEB_SERVICE_URI).request().post(Entity.xml(user1));
+		String location1 = userResponse0.getLocation().toString();
+		userResponse0.close();
+
+		Author author = new Author("Fake", "Wilson");
+		Book book = new Book("Whats Is A WebService", Genre.ACADEMIC, Language.ENGLISH, Type.PAPERBACK, author);
+		Response authorResponse1 = _client.target(location1 + "/books").request().put(Entity.xml(book));
+		authorResponse1.close();
+
+		Author author1 = new Author("Real", "Wilson");
+		Book book1 = new Book("Whats Is A Algorithm", Genre.ACADEMIC, Language.ENGLISH, Type.PAPERBACK, author1);
+		Response bookResponse2 = _client.target(location1 + "/books").request().put(Entity.xml(book1));
+		bookResponse2.close();
+
+		Author author2 = new Author("Who's", "Wilson");
+		Book book2 = new Book("Whats Is A DDOS", Genre.ACADEMIC, Language.ENGLISH, Type.PAPERBACK, author2);
+		Response bookResponse3 = _client.target(location1 + "/books").request().put(Entity.xml(book2));
+		bookResponse3.close();
+
+		List<Request> result = _client.target("http://localhost:8080/services/authors?size=2").request()
+				.accept("application/xml").get(new GenericType<List<Request>>() {
+				});
+
+		assertEquals(2, result.size());
+	}
+
+	/**
+	 * Tests that the Web service retrieve a specific author
+	 */
+	@Test
+	public void authorResourceGetAuthor() {
+		User user1 = new User("Ash", "Catch", "ThemAll", "Auckland");
+		Response userResponse0 = _client.target(WEB_SERVICE_URI).request().post(Entity.xml(user1));
+		String location1 = userResponse0.getLocation().toString();
+		userResponse0.close();
+
+		Author author = new Author("Gaben", "New");
+		Book book = new Book("How To Run Steam", Genre.COMEDY, Language.ENGLISH, Type.PAPERBACK, author);
+		Response authorResponse1 = _client.target(location1 + "/books").request().put(Entity.xml(book));
+		String location2 = authorResponse1.getLocation().toString();
+		String idStr1 = location2.substring(location2.lastIndexOf('/') + 1);
+		authorResponse1.close();
+
+		Book book1 = new Book("How Not To Run Steam", Genre.ACADEMIC, Language.ENGLISH, Type.PAPERBACK, author);
+		Response bookResponse2 = _client.target(location1 + "/books").request().put(Entity.xml(book1));
+		bookResponse2.close();
+
+		Book book2 = new Book("How To Run Make A Game", Genre.COMEDY, Language.ENGLISH, Type.PAPERBACK, author);
+		Response bookResponse3 = _client.target(location1 + "/books").request().put(Entity.xml(book2));
+		bookResponse3.close();
+
+		Book bookFromService = _client.target("http://localhost:8080/services/books/" + idStr1).request()
+				.accept("application/xml").get(Book.class);
+
+		Author result = _client.target("http://localhost:8080/services/authors/" + bookFromService.getAuthor().getId())
+				.request().accept("application/xml").get(Author.class);
+
+		assertEquals(author.getFirstName(), result.getFirstName());
+		assertEquals(author.getLastName(), result.getLastName());
+		assertEquals(author.getWrittenBooks(), result.getWrittenBooks());
+
 	}
 
 	/**
@@ -304,8 +378,6 @@ public class ResourceTest {
 		bookResponse3.close();
 
 		Response bookResponse4 = _client.target(location2 + "/books").request().put(Entity.xml(book2));
-		String location4 = bookResponse4.getLocation().toString();
-		String idStr1 = location4.substring(location4.lastIndexOf('/') + 1);
 		bookResponse4.close();
 
 		List<User> users = _client.target("http://localhost:8080/services/books/" + idStr + "/owners").request()
@@ -313,7 +385,7 @@ public class ResourceTest {
 				});
 		assertEquals(2, users.size());
 	}
-	
+
 	/**
 	 * Tests that the Web service can return a number of request.
 	 */
@@ -328,17 +400,17 @@ public class ResourceTest {
 		User user2 = new User("hacker3", "Worst", "Hacker", "Auckland");
 		Response response2 = _client.target(WEB_SERVICE_URI).request().post(Entity.xml(user2));
 		response2.close();
-		
-		List<User> users = _client.target(WEB_SERVICE_URI + "?size=2").request()
-				.accept("application/xml").get(new GenericType<List<User>>() {
+
+		List<User> users = _client.target(WEB_SERVICE_URI + "?size=2").request().accept("application/xml")
+				.get(new GenericType<List<User>>() {
 				});
 		assertEquals(2, users.size());
-
 	}
 
 	/**
-	 * Testing if the web service can create a cookie that holds the id of the user
-	 * and then retrieve that cookie This can be used to find other users in the same city
+	 * Testing if the web service can create a cookie that holds the id of the
+	 * user and then retrieve that cookie This can be used to find other users
+	 * in the same city
 	 */
 	@Test
 	public void testUserLogin() {
@@ -352,21 +424,62 @@ public class ResourceTest {
 		User user2 = new User("lecturer012", "Maybe", "Lecturer", "Wellington");
 		Response response2 = _client.target(WEB_SERVICE_URI).request().post(Entity.xml(user2));
 		response2.close();
-		
-		
 
 		// Create a cookie for the user
-		Response response3  = _client.target(location + "/login").request().get();
+		Response response3 = _client.target(location + "/login").request().get();
 		Cookie cookie = response3.getCookies().get("user").toCookie();
 		response3.close();
 
 		// Now retrieve users in same city with cookie
-		List<User> users = _client.target(WEB_SERVICE_URI ).request().cookie(cookie)
-				.get(new GenericType<List<User>>() {
-				});
+		List<User> users = _client.target(WEB_SERVICE_URI).request().cookie(cookie).get(new GenericType<List<User>>() {
+		});
 		assertEquals(3, users.size());
 		assertEquals(user0.getCity(), users.get(0).getCity());
 		assertEquals(user0.getCity(), users.get(1).getCity());
 		assertEquals(user0.getCity(), users.get(2).getCity());
 	}
+	
+//	/**
+//	 * Tests that the Web service can add a new request to a user
+//	 * NOT WORKING SOCKET CLOSE ERROR
+//	 */
+//	@Test
+//	public void testRequestAlert() {
+//		User user1 = new User("ProGamer", "Pro", "Gamer", "Auckland");
+//		Response requestResponse0 = _client.target(WEB_SERVICE_URI).request().post(Entity.xml(user1));
+//		String location1 = requestResponse0.getLocation().toString();
+//		requestResponse0.close();
+//		
+//		Author author = new Author("Mark", "Wilson");
+//		Book book = new Book("How To AimBot", Genre.ACADEMIC, Language.ENGLISH, Type.PAPERBACK, author);
+//		Response requestResponse1 = _client.target(location1 + "/books").request().put(Entity.xml(book));
+//		requestResponse1.close();
+//
+//		User user2 = new User("RealProGamer", "Real", "Gamer", "Auckland");
+//		Response requestResponse2 = _client.target(WEB_SERVICE_URI).request().post(Entity.xml(user2));
+//		String location2 = requestResponse2.getLocation().toString();
+//		Future<Response> alert = _client.target(location2 + "/subscribe").request().async().get();
+//		requestResponse2.close();
+//		
+//		Request request = new Request(user2, book);
+//		request.setLocation(new nz.ac.auckland.bookShare.domain.Location(10.5, 43.1));
+//		request.setMessage("Want to swap for one of my books?");
+//		Response requestResponse3 = _client.target(location1 + "/requests/alert").request().put(Entity.xml(request));
+//		requestResponse3.close();
+//		
+//		Request asyncRequest = null;
+//		try {
+//			asyncRequest = alert.get().readEntity(Request.class);
+//			assertEquals(request.getBook().getName(), asyncRequest.getBook().getName());
+//			assertEquals(request.getBook().getType(), asyncRequest.getBook().getType());
+//			assertEquals(request.getBook().getLanguage(), asyncRequest.getBook().getLanguage());
+//			assertEquals(request.getBook().getGenre(), asyncRequest.getBook().getGenre());
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//			fail();
+//		} catch (ExecutionException e) {
+//			e.printStackTrace();
+//			fail();
+//		}
+//	}
 }

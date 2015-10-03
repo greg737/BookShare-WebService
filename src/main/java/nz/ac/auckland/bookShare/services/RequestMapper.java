@@ -21,6 +21,8 @@ public class RequestMapper {
 		}
 		Request fullRequest = new Request(dtoRequest.getId(), requestors, UserMapper.toDomainModel(dtoRequest.getOwner()),
 				BookMapper.toDomainModel(dtoRequest.getBook()));
+		fullRequest.setMessage(dtoRequest.getMessage());
+		fullRequest.setLocation(dtoRequest.getLocation());
 		return fullRequest;
 	}
 
@@ -31,6 +33,8 @@ public class RequestMapper {
 		}
 		nz.ac.auckland.bookShare.dto.Request dtoRequest = new nz.ac.auckland.bookShare.dto.Request(request.getId(),
 				requestors, UserMapper.toDto(request.getOwner()), BookMapper.toDto(request.getBook()));
+		dtoRequest.setMessage(request.getMessage());
+		dtoRequest.setLocation(request.getLocation());
 		return dtoRequest;
 	}
 }

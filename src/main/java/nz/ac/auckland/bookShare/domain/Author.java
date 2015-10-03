@@ -5,7 +5,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import static javax.persistence.FetchType.EAGER;
+import static javax.persistence.FetchType.LAZY;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,7 +24,7 @@ import java.util.Collection;
 @Table(name = "AUTHOR", uniqueConstraints = 
 {@UniqueConstraint(columnNames = { "FIRSTNAME", "LASTNAME" }) })
 public class Author extends Person {
-	@OneToMany(fetch = EAGER)
+	@OneToMany(fetch = LAZY)
 	private Collection<Book> _writtenBooks;
 
 	//Default constructor method for JAXB

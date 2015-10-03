@@ -2,6 +2,11 @@ package nz.ac.auckland.bookShare.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -15,13 +20,18 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * @author Greggory Tan
  *
  */
+@XmlRootElement
+@XmlType(name="location")
+@XmlAccessorType(XmlAccessType.FIELD)
 @Embeddable
 public class Location {
 	
 	@Column(name="LATITUDE")
+	@XmlElement(name="latitude")
 	private double _latitude;
 	
 	@Column(name="LONGITUDE")
+	@XmlElement(name="longitude")
 	private double _longitude;
 	
 	//Default constructor method for JAXB

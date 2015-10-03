@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import nz.ac.auckland.bookShare.domain.Request;
 
-@Path("/request")
+@Path("/requests")
 public class RequestResource {
 	private static final Logger _logger = LoggerFactory.getLogger(UserResource.class);
 	private EntityManager _em = null;

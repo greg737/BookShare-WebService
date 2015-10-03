@@ -3,9 +3,12 @@ package nz.ac.auckland.bookShare.services;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import javax.persistence.EntityManager;
 import javax.ws.rs.Consumes;
@@ -19,6 +22,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.NewCookie;
@@ -43,9 +48,13 @@ import nz.ac.auckland.bookShare.domain.User;
 public class UserResource {
 	private static final Logger _logger = LoggerFactory.getLogger(UserResource.class);
 	private EntityManager _em = null;
+	protected HashMap<Long ,AsyncResponse> responses = new HashMap<Long, AsyncResponse>();
+
+	private Executor executor;
 
 	public UserResource() {
 		_em = EntityManagerFactorySingleton.generateEntityManager();
+		executor = Executors.newSingleThreadExecutor();
 	}
 
 	/**
@@ -71,14 +80,13 @@ public class UserResource {
 
 	/**
 	 * Returns a view of the User database, represented as a List of
-	 * nz.ac.auckland.bookShare.dto.User objects.
-	 * If a cookie is received from the user a List of Users in the 
-	 * same city is returned instead.
-	 * A QueryParam of size can be included to limit the number of users returned
+	 * nz.ac.auckland.bookShare.dto.User objects. If a cookie is received from
+	 * the user a List of Users in the same city is returned instead. A
+	 * QueryParam of size can be included to limit the number of users returned
 	 * 
 	 * @param size
 	 * @param cookie
-	 * @return List<nz.ac.auckland.bookShare.dto.User> 
+	 * @return List<nz.ac.auckland.bookShare.dto.User>
 	 */
 	@GET
 	@Produces("application/xml")
@@ -150,7 +158,7 @@ public class UserResource {
 	}
 
 	/**
-	 * Adds a Book to the user's library. 
+	 * Adds a Book to the user's library.
 	 * 
 	 * @param id
 	 * @param dtoBook
@@ -199,11 +207,11 @@ public class UserResource {
 
 	/**
 	 * Returns a view of the Book owned by the user, represented as a List of
-	 * nz.ac.auckland.bookShare.dto.Book objects.
-	 * A QueryParam of size can be included to limit the number of books returned
+	 * nz.ac.auckland.bookShare.dto.Book objects. A QueryParam of size can be
+	 * included to limit the number of books returned
 	 * 
 	 * @param size
-	 * @return List<nz.ac.auckland.bookShare.dto.Book> 
+	 * @return List<nz.ac.auckland.bookShare.dto.Book>
 	 */
 	@GET
 	@Path("{id}/books")
@@ -235,7 +243,7 @@ public class UserResource {
 	}
 
 	/**
-	 * Adds a new Request to the owner of the book. 
+	 * Adds a new Request to the owner of the book.
 	 * 
 	 * @param id
 	 * @param dtoBook
@@ -244,7 +252,8 @@ public class UserResource {
 	@PUT
 	@Path("{id}/requests")
 	@Consumes("application/xml")
-	public Response addRequestForUser(@PathParam("id") long id, nz.ac.auckland.bookShare.dto.Request dtoRequest) {
+	public Response addRequestForUser(@PathParam("id") long id,
+			nz.ac.auckland.bookShare.dto.Request dtoRequest) {
 		_em.getTransaction().begin();
 		User user = _em.find(User.class, id);
 		_logger.debug("Adding request to User with ID: " + user.getId());
@@ -276,21 +285,24 @@ public class UserResource {
 			newBook = resultBook.get(0);
 		}
 		Request newRequest = new Request(request.getId(), users, request.getOwner(), newBook);
+		newRequest.setMessage(dtoRequest.getMessage());
+		newRequest.setLocation(dtoRequest.getLocation());
 		_em.persist(newRequest);
 		_logger.debug("Added new Request to User with ID = " + user.getId());
 		_em.getTransaction().commit();
 		requestID = newRequest.getId();
 		_em.close();
+
 		return Response.created(URI.create("/users/" + id + "/request/" + requestID)).build();
 	}
 
 	/**
 	 * Returns a view of the Request sent to the user, represented as a List of
-	 * nz.ac.auckland.bookShare.dto.Request objects.
-	 * A QueryParam of size can be included to limit the number of requests returned
+	 * nz.ac.auckland.bookShare.dto.Request objects. A QueryParam of size can be
+	 * included to limit the number of requests returned
 	 * 
 	 * @param size
-	 * @return List<nz.ac.auckland.bookShare.dto.Request> 
+	 * @return List<nz.ac.auckland.bookShare.dto.Request>
 	 */
 	@GET
 	@Path("{id}/requests")
@@ -328,7 +340,6 @@ public class UserResource {
 	 * @param id
 	 * @return Response
 	 */
-
 	@GET
 	@Path("{id}/login")
 	@Produces(MediaType.TEXT_PLAIN)
@@ -337,6 +348,82 @@ public class UserResource {
 		NewCookie cookie = new NewCookie("user", Long.toString(id));
 		_logger.debug("Created a cookie for user: " + id + " with details: " + cookie.toString());
 		return Response.ok("OK").cookie(cookie).build();
+	}
+
+	/**
+	 * Lets the user subscribe to receive alerts when a new request is
+	 * sent to the user
+	 * 
+	 * @param response
+	 * @param id
+	 */
+	@GET
+	@Path("{id}/subscribe")
+	@Produces("text/plain")
+	public synchronized void receive(@Suspended AsyncResponse response, @PathParam("id") long id) {
+		responses.put(id, response);
+	}
+	
+	/**
+	 * Adds a new Request to the owner of the book and alerts the owner if the user subscribed.
+	 * NOT WORKING SOCKET CLOSE ERROR
+	 * 
+	 * @param id
+	 * @param dtoBook
+	 * @return Response
+	 */
+	@PUT
+	@Path("{id}/requests/alert")
+	@Consumes("application/xml")
+	public synchronized AsyncResponse addRequestForUserAndAlert(@PathParam("id") long id,
+			nz.ac.auckland.bookShare.dto.Request dtoRequest) {
+		_em.getTransaction().begin();
+		User user = _em.find(User.class, id);
+		_logger.debug("Adding request to User with ID: " + user.getId());
+		Set<User> requestors = new HashSet<User>();
+		for (nz.ac.auckland.bookShare.dto.User requestor : dtoRequest.getRequestors()) {
+			requestors.add(UserMapper.toDomainModel(requestor));
+		}
+		Request request = new Request(dtoRequest.getId(), requestors, user,
+				BookMapper.toDomainModel(dtoRequest.getBook()));
+		long requestID = request.getId();
+
+		Set<User> users = new HashSet<User>();
+		for (User u : request.getRequestors()) {
+			List<User> resultUser = _em
+					.createQuery("select u from User u where u._firstName = :first " + "and u._lastName = :last")
+					.setParameter("first", u.getFirstName()).setParameter("last", u.getLastName()).getResultList();
+			if (resultUser.size() == 0) {
+				users.add(u);
+			} else {
+				users.add(resultUser.get(0));
+			}
+		}
+		List<Book> resultBook = _em.createQuery("select b from Book b where b._name = :name ")
+				.setParameter("name", request.getBook().getName()).getResultList();
+		Book newBook;
+		if (resultBook.size() == 0) {
+			newBook = request.getBook();
+		} else {
+			newBook = resultBook.get(0);
+		}
+		Request newRequest = new Request(request.getId(), users, request.getOwner(), newBook);
+		newRequest.setMessage(dtoRequest.getMessage());
+		newRequest.setLocation(dtoRequest.getLocation());
+		_em.persist(newRequest);
+		_logger.debug("Added new Request to User with ID = " + user.getId());
+		_em.getTransaction().commit();
+		requestID = newRequest.getId();
+
+		AsyncResponse response = responses.get(id);
+		if (response != null) {
+			_logger.debug("@@@");
+			response.resume(newRequest);
+		}
+		else{
+			_em.close();
+		}
+		return response;
 	}
 
 	/**

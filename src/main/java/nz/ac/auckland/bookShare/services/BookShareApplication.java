@@ -29,6 +29,7 @@ public class BookShareApplication extends Application
       classes.add(UserResource.class);
       classes.add(UserResolver.class);
       classes.add(BookResource.class);
+      classes.add(AuthorResource.class);
       classes.add(RequestResource.class);
    }
 

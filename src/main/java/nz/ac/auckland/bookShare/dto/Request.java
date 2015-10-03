@@ -10,6 +10,8 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
+import nz.ac.auckland.bookShare.domain.Location;
+
 /**
  * DTO class to represent a Request.
  * 
@@ -35,6 +37,9 @@ public class Request {
 	
 	@XmlElement(name="location")
 	private Location _location;
+	
+	@XmlElement(name="message")
+	private String _msg;
 	
 	public Request(){
 		this(null, null, null);
@@ -110,5 +115,13 @@ public class Request {
 	
 	public Location getLocation(){
 		return _location;
+	}
+	
+	public void setMessage(String msg){
+		_msg = msg;
+	}
+	
+	public String getMessage(){
+		return _msg;
 	}
 }
